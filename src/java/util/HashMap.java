@@ -14,8 +14,7 @@ import java.util.function.Function;
 import sun.misc.SharedSecrets;
 
 @SuppressWarnings("ALL")
-public class HashMap<K, V> extends AbstractMap<K, V>
-        implements Map<K, V>, Cloneable, Serializable {
+public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Cloneable, Serializable {
 
     private static final long serialVersionUID = 362498820763181265L;
 
@@ -88,19 +87,16 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         }
 
         public final boolean equals(Object o) {
-            if (o == this)
-                return true;
+            if (o == this) return true;
             if (o instanceof Map.Entry) {
                 Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
-                if (Objects.equals(key, e.getKey()) &&
-                        Objects.equals(value, e.getValue()))
-                    return true;
+                if (Objects.equals(key, e.getKey()) && Objects.equals(value, e.getValue())) return true;
             }
             return false;
         }
     }
 
-    /* ---------------- Static utilities -------------- */
+    /* ---------------- 静态公用 -------------- */
 
     /**
      * key的hashCode
@@ -111,8 +107,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     }
 
     /**
-     * Returns x's Class if it is of the form "class C implements
-     * Comparable<C>", else null.
+     * 如果x的Class的形式为“Class C implements Comparable<C>”，则返回x的Class,否则为空
      */
     static Class<?> comparableClassFor(Object x) {
         if (x instanceof Comparable) {
@@ -124,11 +119,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                 return c;
             if ((ts = c.getGenericInterfaces()) != null) {
                 for (int i = 0; i < ts.length; ++i) {
-                    if (((t = ts[i]) instanceof ParameterizedType) &&
-                            ((p = (ParameterizedType) t).getRawType() ==
-                                    Comparable.class) &&
-                            (as = p.getActualTypeArguments()) != null &&
-                            as.length == 1 && as[0] == c) // type arg is c
+                    if (((t = ts[i]) instanceof ParameterizedType) && ((p = (ParameterizedType) t).getRawType() == Comparable.class) && (as = p.getActualTypeArguments()) != null && as.length == 1 && as[0] == c) // type arg is c
                         return c;
                 }
             }
@@ -137,13 +128,11 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     }
 
     /**
-     * Returns k.compareTo(x) if x matches kc (k's screened comparable
-     * class), else 0.
+     * 如果x与kc（k的筛选可比性）匹配，则返回k.compareTo（x）,否则为0
      */
     @SuppressWarnings({"rawtypes", "unchecked"}) // for cast to Comparable
     static int compareComparables(Class<?> kc, Object k, Object x) {
-        return (x == null || x.getClass() != kc ? 0 :
-                ((Comparable) k).compareTo(x));
+        return (x == null || x.getClass() != kc ? 0 : ((Comparable) k).compareTo(x));
     }
 
     /**
@@ -159,95 +148,64 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
     }
 
-    /* ---------------- Fields -------------- */
+    /* ---------------- 字段 -------------- */
 
     /**
-     * The table, initialized on first use, and resized as
-     * necessary. When allocated, length is always a power of two.
-     * (We also tolerate length zero in some operations to allow
-     * bootstrapping mechanics that are currently not needed.)
+     * 该表在首次使用时初始化，并调整大小为必要的。当被分配时，长度总是二的幂
      */
     transient Node<K, V>[] table;
 
     /**
-     * Holds cached entrySet(). Note that AbstractMap fields are used
-     * for keySet() and values().
+     * 保留缓存的entrySet()
      */
     transient Set<Map.Entry<K, V>> entrySet;
 
     /**
-     * The number of key-value mappings contained in this map.
+     * map含有的键值对数
      */
     transient int size;
 
     /**
-     * The number of times this HashMap has been structurally modified
-     * Structural modifications are those that change the number of mappings in
-     * the HashMap or otherwise modify its internal structure (e.g.,
-     * rehash).  This field is used to make iterators on Collection-views of
-     * the HashMap fail-fast.  (See ConcurrentModificationException).
+     * 修改次数,实现快速失败 ConcurrentModificationException
      */
     transient int modCount;
 
     /**
-     * The next size value at which to resize (capacity * load factor).
-     *
-     * @serial
+     * 扩容阈值(容量 *负载因子)
      */
-    // (The javadoc description is true upon serialization.
-    // Additionally, if the table array has not been allocated, this
-    // field holds the initial array capacity, or zero signifying
-    // DEFAULT_INITIAL_CAPACITY.)
     int threshold;
 
     /**
-     * The load factor for the hash table.
-     *
-     * @serial
+     * 负载因子
      */
     final float loadFactor;
 
     /* ---------------- Public operations -------------- */
 
     /**
-     * Constructs an empty <tt>HashMap</tt> with the specified initial
-     * capacity and load factor.
-     *
-     * @param initialCapacity the initial capacity
-     * @param loadFactor      the load factor
-     * @throws IllegalArgumentException if the initial capacity is negative
-     *                                  or the load factor is nonpositive
+     * 使用指定的初始值构造一个空的 HashMap 容量和负载系数
      */
     public HashMap(int initialCapacity, float loadFactor) {
-        if (initialCapacity < 0)
-            throw new IllegalArgumentException("Illegal initial capacity: " +
-                    initialCapacity);
-        if (initialCapacity > MAXIMUM_CAPACITY)
-            initialCapacity = MAXIMUM_CAPACITY;
+        if (initialCapacity < 0) throw new IllegalArgumentException("Illegal initial capacity: " + initialCapacity);
+        if (initialCapacity > MAXIMUM_CAPACITY) initialCapacity = MAXIMUM_CAPACITY;
         if (loadFactor <= 0 || Float.isNaN(loadFactor))
-            throw new IllegalArgumentException("Illegal load factor: " +
-                    loadFactor);
+            throw new IllegalArgumentException("Illegal load factor: " + loadFactor);
         this.loadFactor = loadFactor;
         this.threshold = tableSizeFor(initialCapacity);
     }
 
     /**
-     * Constructs an empty <tt>HashMap</tt> with the specified initial
-     * capacity and the default load factor (0.75).
-     *
-     * @param initialCapacity the initial capacity.
-     * @throws IllegalArgumentException if the initial capacity is negative.
+     * 使用指定的初始值构造一个空的 HashMap 容量和 默认负载系数 (0.75)
      */
     public HashMap(int initialCapacity) {
         this(initialCapacity, DEFAULT_LOAD_FACTOR);
     }
 
     /**
-     * Constructs an empty <tt>HashMap</tt> with the default initial capacity
-     * (16) and the default load factor (0.75).
+     * 构造一个空的 HashMap 容量(16) 和 默认负载系数 (0.75)
      */
     public HashMap() {
-        this.loadFactor = DEFAULT_LOAD_FACTOR; // all other fields defaulted
+        this.loadFactor = DEFAULT_LOAD_FACTOR;
     }
 
     /**
@@ -276,12 +234,9 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         if (s > 0) {
             if (table == null) { // pre-size
                 float ft = ((float) s / loadFactor) + 1.0F;
-                int t = ((ft < (float) MAXIMUM_CAPACITY) ?
-                        (int) ft : MAXIMUM_CAPACITY);
-                if (t > threshold)
-                    threshold = tableSizeFor(t);
-            } else if (s > threshold)
-                resize();
+                int t = ((ft < (float) MAXIMUM_CAPACITY) ? (int) ft : MAXIMUM_CAPACITY);
+                if (t > threshold) threshold = tableSizeFor(t);
+            } else if (s > threshold) resize();
             for (Map.Entry<? extends K, ? extends V> e : m.entrySet()) {
                 K key = e.getKey();
                 V value = e.getValue();
@@ -342,79 +297,38 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         Node<K, V> first, e;
         int n;
         K k;
-        if ((tab = table) != null && (n = tab.length) > 0 &&
-                (first = tab[(n - 1) & hash]) != null) {
+        if ((tab = table) != null && (n = tab.length) > 0 && (first = tab[(n - 1) & hash]) != null) {
             if (first.hash == hash && // always check first node
-                    ((k = first.key) == key || (key != null && key.equals(k))))
-                return first;
+                    ((k = first.key) == key || (key != null && key.equals(k)))) return first;
             if ((e = first.next) != null) {
-                if (first instanceof TreeNode)
-                    return ((TreeNode<K, V>) first).getTreeNode(hash, key);
+                if (first instanceof TreeNode) return ((TreeNode<K, V>) first).getTreeNode(hash, key);
                 do {
-                    if (e.hash == hash &&
-                            ((k = e.key) == key || (key != null && key.equals(k))))
-                        return e;
+                    if (e.hash == hash && ((k = e.key) == key || (key != null && key.equals(k)))) return e;
                 } while ((e = e.next) != null);
             }
         }
         return null;
     }
 
-    /**
-     * Returns <tt>true</tt> if this map contains a mapping for the
-     * specified key.
-     *
-     * @param key The key whose presence in this map is to be tested
-     * @return <tt>true</tt> if this map contains a mapping for the specified
-     * key.
-     */
     public boolean containsKey(Object key) {
         return getNode(hash(key), key) != null;
     }
 
-    /**
-     * Associates the specified value with the specified key in this map.
-     * If the map previously contained a mapping for the key, the old
-     * value is replaced.
-     *
-     * @param key   key with which the specified value is to be associated
-     * @param value value to be associated with the specified key
-     * @return the previous value associated with <tt>key</tt>, or
-     * <tt>null</tt> if there was no mapping for <tt>key</tt>.
-     * (A <tt>null</tt> return can also indicate that the map
-     * previously associated <tt>null</tt> with <tt>key</tt>.)
-     */
     public V put(K key, V value) {
         return putVal(hash(key), key, value, false, true);
     }
 
-    /**
-     * Implements Map.put and related methods.
-     *
-     * @param hash         hash for key
-     * @param key          the key
-     * @param value        the value to put
-     * @param onlyIfAbsent if true, don't change existing value
-     * @param evict        if false, the table is in creation mode.
-     * @return previous value, or null if none
-     */
-    final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
-                   boolean evict) {
+    final V putVal(int hash, K key, V value, boolean onlyIfAbsent, boolean evict) {
         Node<K, V>[] tab;
         Node<K, V> p;
         int n, i;
-        if ((tab = table) == null || (n = tab.length) == 0)
-            n = (tab = resize()).length;
-        if ((p = tab[i = (n - 1) & hash]) == null)
-            tab[i] = newNode(hash, key, value, null);
+        if ((tab = table) == null || (n = tab.length) == 0) n = (tab = resize()).length;
+        if ((p = tab[i = (n - 1) & hash]) == null) tab[i] = newNode(hash, key, value, null);
         else {
             Node<K, V> e;
             K k;
-            if (p.hash == hash &&
-                    ((k = p.key) == key || (key != null && key.equals(k))))
-                e = p;
-            else if (p instanceof TreeNode)
-                e = ((TreeNode<K, V>) p).putTreeVal(this, tab, hash, key, value);
+            if (p.hash == hash && ((k = p.key) == key || (key != null && key.equals(k)))) e = p;
+            else if (p instanceof TreeNode) e = ((TreeNode<K, V>) p).putTreeVal(this, tab, hash, key, value);
             else {
                 for (int binCount = 0; ; ++binCount) {
                     if ((e = p.next) == null) {
@@ -423,61 +337,48 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                             treeifyBin(tab, hash);
                         break;
                     }
-                    if (e.hash == hash &&
-                            ((k = e.key) == key || (key != null && key.equals(k))))
-                        break;
+                    if (e.hash == hash && ((k = e.key) == key || (key != null && key.equals(k)))) break;
                     p = e;
                 }
             }
             if (e != null) { // existing mapping for key
                 V oldValue = e.value;
-                if (!onlyIfAbsent || oldValue == null)
-                    e.value = value;
+                if (!onlyIfAbsent || oldValue == null) e.value = value;
                 afterNodeAccess(e);
                 return oldValue;
             }
         }
         ++modCount;
-        if (++size > threshold)
-            resize();
+        if (++size > threshold) resize();
         afterNodeInsertion(evict);
         return null;
     }
 
     /**
-     * Initializes or doubles table size.  If null, allocates in
-     * accord with initial capacity target held in field threshold.
-     * Otherwise, because we are using power-of-two expansion, the
-     * elements from each bin must either stay at same index, or move
-     * with a power of two offset in the new table.
-     *
-     * @return the table
+     * 初始化或加倍表大小
      */
     final Node<K, V>[] resize() {
         Node<K, V>[] oldTab = table;
-        int oldCap = (oldTab == null) ? 0 : oldTab.length;
-        int oldThr = threshold;
-        int newCap, newThr = 0;
-        if (oldCap > 0) {
-            if (oldCap >= MAXIMUM_CAPACITY) {
+        int oldCap = (oldTab == null) ? 0 : oldTab.length;//旧容量
+        int oldThr = threshold;//旧阈值
+        int newCap, newThr = 0;//新容量,新阈值
+        if (oldCap > 0) {//非空
+            if (oldCap >= MAXIMUM_CAPACITY) {//最大容量不扩容返回
                 threshold = Integer.MAX_VALUE;
                 return oldTab;
-            } else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
-                    oldCap >= DEFAULT_INITIAL_CAPACITY)
-                newThr = oldThr << 1; // double threshold
-        } else if (oldThr > 0) // initial capacity was placed in threshold
-            newCap = oldThr;
-        else {               // zero initial threshold signifies using defaults
-            newCap = DEFAULT_INITIAL_CAPACITY;
-            newThr = (int) (DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
+            } else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY && oldCap >= DEFAULT_INITIAL_CAPACITY) //扩容后新容量小于最大容量而且旧容量大于初始容量(16)
+                newThr = oldThr << 1; //加倍 扩容阈值(容量 *负载因子)
+        } else if (oldThr > 0) newCap = oldThr;//有参构造 新容量已设置为旧阈值
+        else {//无参构造
+            newCap = DEFAULT_INITIAL_CAPACITY;//16
+            newThr = (int) (DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);// 0.75 * 16
         }
-        if (newThr == 0) {
-            float ft = (float) newCap * loadFactor;
-            newThr = (newCap < MAXIMUM_CAPACITY && ft < (float) MAXIMUM_CAPACITY ?
-                    (int) ft : Integer.MAX_VALUE);
+        if (newThr == 0) {//oldCap==0&&oldThr>0
+            float ft = (float) newCap * loadFactor;//将newCap乘上一个扩容因子,因为有可能结果为浮点型，所以用float类型的局部变量ft接收
+            // 再将ft转成int类型赋值给newThr阈值，前提是newCap还未达到最大容量，否则就直接将最大容量赋给newThr
+            newThr = (newCap < MAXIMUM_CAPACITY && ft < (float) MAXIMUM_CAPACITY ? (int) ft : Integer.MAX_VALUE);
         }
         threshold = newThr;
-        @SuppressWarnings({"rawtypes", "unchecked"})
         Node<K, V>[] newTab = (Node<K, V>[]) new Node[newCap];
         table = newTab;
         if (oldTab != null) {
@@ -486,29 +387,32 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                 if ((e = oldTab[j]) != null) {
                     oldTab[j] = null;
                     if (e.next == null)
+                        //未形成链表
                         newTab[e.hash & (newCap - 1)] = e;
                     else if (e instanceof TreeNode)
+                        //树节点,重排节点
                         ((TreeNode<K, V>) e).split(this, newTab, j, oldCap);
-                    else { // preserve order
+                    else {
+                        // 形成了链表但还未树化,保持顺序
                         Node<K, V> loHead = null, loTail = null;
                         Node<K, V> hiHead = null, hiTail = null;
                         Node<K, V> next;
+                        //原始链表的循环遍历
                         do {
                             next = e.next;
                             if ((e.hash & oldCap) == 0) {
-                                if (loTail == null)
-                                    loHead = e;
-                                else
-                                    loTail.next = e;
+                                //重排后仍会处于原索引位 的节点,这些节点之间不一定相邻
+                                if (loTail == null) loHead = e;
+                                else loTail.next = e;
                                 loTail = e;
                             } else {
-                                if (hiTail == null)
-                                    hiHead = e;
-                                else
-                                    hiTail.next = e;
+                                //重排后将处于新的索引位的节点
+                                if (hiTail == null) hiHead = e;
+                                else hiTail.next = e;
                                 hiTail = e;
                             }
                         } while ((e = next) != null);
+                        //该链表的头节点指针赋给newTab中对应的索引位
                         if (loTail != null) {
                             loTail.next = null;
                             newTab[j] = loHead;
@@ -531,22 +435,19 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     final void treeifyBin(Node<K, V>[] tab, int hash) {
         int n, index;
         Node<K, V> e;
-        if (tab == null || (n = tab.length) < MIN_TREEIFY_CAPACITY)
-            resize();
+        if (tab == null || (n = tab.length) < MIN_TREEIFY_CAPACITY) resize();
         else if ((e = tab[index = (n - 1) & hash]) != null) {
             TreeNode<K, V> hd = null, tl = null;
             do {
                 TreeNode<K, V> p = replacementTreeNode(e, null);
-                if (tl == null)
-                    hd = p;
+                if (tl == null) hd = p;
                 else {
                     p.prev = tl;
                     tl.next = p;
                 }
                 tl = p;
             } while ((e = e.next) != null);
-            if ((tab[index] = hd) != null)
-                hd.treeify(tab);
+            if ((tab[index] = hd) != null) hd.treeify(tab);
         }
     }
 
@@ -573,8 +474,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
      */
     public V remove(Object key) {
         Node<K, V> e;
-        return (e = removeNode(hash(key), key, null, false, true)) == null ?
-                null : e.value;
+        return (e = removeNode(hash(key), key, null, false, true)) == null ? null : e.value;
     }
 
     /**
@@ -587,27 +487,20 @@ public class HashMap<K, V> extends AbstractMap<K, V>
      * @param movable    if false do not move other nodes while removing
      * @return the node, or null if none
      */
-    final Node<K, V> removeNode(int hash, Object key, Object value,
-                                boolean matchValue, boolean movable) {
+    final Node<K, V> removeNode(int hash, Object key, Object value, boolean matchValue, boolean movable) {
         Node<K, V>[] tab;
         Node<K, V> p;
         int n, index;
-        if ((tab = table) != null && (n = tab.length) > 0 &&
-                (p = tab[index = (n - 1) & hash]) != null) {
+        if ((tab = table) != null && (n = tab.length) > 0 && (p = tab[index = (n - 1) & hash]) != null) {
             Node<K, V> node = null, e;
             K k;
             V v;
-            if (p.hash == hash &&
-                    ((k = p.key) == key || (key != null && key.equals(k))))
-                node = p;
+            if (p.hash == hash && ((k = p.key) == key || (key != null && key.equals(k)))) node = p;
             else if ((e = p.next) != null) {
-                if (p instanceof TreeNode)
-                    node = ((TreeNode<K, V>) p).getTreeNode(hash, key);
+                if (p instanceof TreeNode) node = ((TreeNode<K, V>) p).getTreeNode(hash, key);
                 else {
                     do {
-                        if (e.hash == hash &&
-                                ((k = e.key) == key ||
-                                        (key != null && key.equals(k)))) {
+                        if (e.hash == hash && ((k = e.key) == key || (key != null && key.equals(k)))) {
                             node = e;
                             break;
                         }
@@ -615,14 +508,10 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                     } while ((e = e.next) != null);
                 }
             }
-            if (node != null && (!matchValue || (v = node.value) == value ||
-                    (value != null && value.equals(v)))) {
-                if (node instanceof TreeNode)
-                    ((TreeNode<K, V>) node).removeTreeNode(this, tab, movable);
-                else if (node == p)
-                    tab[index] = node.next;
-                else
-                    p.next = node.next;
+            if (node != null && (!matchValue || (v = node.value) == value || (value != null && value.equals(v)))) {
+                if (node instanceof TreeNode) ((TreeNode<K, V>) node).removeTreeNode(this, tab, movable);
+                else if (node == p) tab[index] = node.next;
+                else p.next = node.next;
                 ++modCount;
                 --size;
                 afterNodeRemoval(node);
@@ -660,9 +549,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         if ((tab = table) != null && size > 0) {
             for (int i = 0; i < tab.length; ++i) {
                 for (Node<K, V> e = tab[i]; e != null; e = e.next) {
-                    if ((v = e.value) == value ||
-                            (value != null && value.equals(v)))
-                        return true;
+                    if ((v = e.value) == value || (value != null && value.equals(v))) return true;
                 }
             }
         }
@@ -720,16 +607,14 @@ public class HashMap<K, V> extends AbstractMap<K, V>
 
         public final void forEach(Consumer<? super K> action) {
             Node<K, V>[] tab;
-            if (action == null)
-                throw new NullPointerException();
+            if (action == null) throw new NullPointerException();
             if (size > 0 && (tab = table) != null) {
                 int mc = modCount;
                 for (int i = 0; i < tab.length; ++i) {
                     for (Node<K, V> e = tab[i]; e != null; e = e.next)
                         action.accept(e.key);
                 }
-                if (modCount != mc)
-                    throw new ConcurrentModificationException();
+                if (modCount != mc) throw new ConcurrentModificationException();
             }
         }
     }
@@ -781,16 +666,14 @@ public class HashMap<K, V> extends AbstractMap<K, V>
 
         public final void forEach(Consumer<? super V> action) {
             Node<K, V>[] tab;
-            if (action == null)
-                throw new NullPointerException();
+            if (action == null) throw new NullPointerException();
             if (size > 0 && (tab = table) != null) {
                 int mc = modCount;
                 for (int i = 0; i < tab.length; ++i) {
                     for (Node<K, V> e = tab[i]; e != null; e = e.next)
                         action.accept(e.value);
                 }
-                if (modCount != mc)
-                    throw new ConcurrentModificationException();
+                if (modCount != mc) throw new ConcurrentModificationException();
             }
         }
     }
@@ -830,8 +713,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         }
 
         public final boolean contains(Object o) {
-            if (!(o instanceof Map.Entry))
-                return false;
+            if (!(o instanceof Map.Entry)) return false;
             Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
             Object key = e.getKey();
             Node<K, V> candidate = getNode(hash(key), key);
@@ -854,16 +736,14 @@ public class HashMap<K, V> extends AbstractMap<K, V>
 
         public final void forEach(Consumer<? super Map.Entry<K, V>> action) {
             Node<K, V>[] tab;
-            if (action == null)
-                throw new NullPointerException();
+            if (action == null) throw new NullPointerException();
             if (size > 0 && (tab = table) != null) {
                 int mc = modCount;
                 for (int i = 0; i < tab.length; ++i) {
                     for (Node<K, V> e = tab[i]; e != null; e = e.next)
                         action.accept(e);
                 }
-                if (modCount != mc)
-                    throw new ConcurrentModificationException();
+                if (modCount != mc) throw new ConcurrentModificationException();
             }
         }
     }
@@ -890,8 +770,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     public boolean replace(K key, V oldValue, V newValue) {
         Node<K, V> e;
         V v;
-        if ((e = getNode(hash(key), key)) != null &&
-                ((v = e.value) == oldValue || (v != null && v.equals(oldValue)))) {
+        if ((e = getNode(hash(key), key)) != null && ((v = e.value) == oldValue || (v != null && v.equals(oldValue)))) {
             e.value = newValue;
             afterNodeAccess(e);
             return true;
@@ -912,10 +791,8 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     }
 
     @Override
-    public V computeIfAbsent(K key,
-                             Function<? super K, ? extends V> mappingFunction) {
-        if (mappingFunction == null)
-            throw new NullPointerException();
+    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+        if (mappingFunction == null) throw new NullPointerException();
         int hash = hash(key);
         Node<K, V>[] tab;
         Node<K, V> first;
@@ -923,18 +800,14 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         int binCount = 0;
         TreeNode<K, V> t = null;
         Node<K, V> old = null;
-        if (size > threshold || (tab = table) == null ||
-                (n = tab.length) == 0)
-            n = (tab = resize()).length;
+        if (size > threshold || (tab = table) == null || (n = tab.length) == 0) n = (tab = resize()).length;
         if ((first = tab[i = (n - 1) & hash]) != null) {
-            if (first instanceof TreeNode)
-                old = (t = (TreeNode<K, V>) first).getTreeNode(hash, key);
+            if (first instanceof TreeNode) old = (t = (TreeNode<K, V>) first).getTreeNode(hash, key);
             else {
                 Node<K, V> e = first;
                 K k;
                 do {
-                    if (e.hash == hash &&
-                            ((k = e.key) == key || (key != null && key.equals(k)))) {
+                    if (e.hash == hash && ((k = e.key) == key || (key != null && key.equals(k)))) {
                         old = e;
                         break;
                     }
@@ -954,12 +827,10 @@ public class HashMap<K, V> extends AbstractMap<K, V>
             old.value = v;
             afterNodeAccess(old);
             return v;
-        } else if (t != null)
-            t.putTreeVal(this, tab, hash, key, v);
+        } else if (t != null) t.putTreeVal(this, tab, hash, key, v);
         else {
             tab[i] = newNode(hash, key, v, first);
-            if (binCount >= TREEIFY_THRESHOLD - 1)
-                treeifyBin(tab, hash);
+            if (binCount >= TREEIFY_THRESHOLD - 1) treeifyBin(tab, hash);
         }
         ++modCount;
         ++size;
@@ -967,31 +838,25 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         return v;
     }
 
-    public V computeIfPresent(K key,
-                              BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        if (remappingFunction == null)
-            throw new NullPointerException();
+    public V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        if (remappingFunction == null) throw new NullPointerException();
         Node<K, V> e;
         V oldValue;
         int hash = hash(key);
-        if ((e = getNode(hash, key)) != null &&
-                (oldValue = e.value) != null) {
+        if ((e = getNode(hash, key)) != null && (oldValue = e.value) != null) {
             V v = remappingFunction.apply(key, oldValue);
             if (v != null) {
                 e.value = v;
                 afterNodeAccess(e);
                 return v;
-            } else
-                removeNode(hash, key, null, false, true);
+            } else removeNode(hash, key, null, false, true);
         }
         return null;
     }
 
     @Override
-    public V compute(K key,
-                     BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
-        if (remappingFunction == null)
-            throw new NullPointerException();
+    public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        if (remappingFunction == null) throw new NullPointerException();
         int hash = hash(key);
         Node<K, V>[] tab;
         Node<K, V> first;
@@ -999,18 +864,14 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         int binCount = 0;
         TreeNode<K, V> t = null;
         Node<K, V> old = null;
-        if (size > threshold || (tab = table) == null ||
-                (n = tab.length) == 0)
-            n = (tab = resize()).length;
+        if (size > threshold || (tab = table) == null || (n = tab.length) == 0) n = (tab = resize()).length;
         if ((first = tab[i = (n - 1) & hash]) != null) {
-            if (first instanceof TreeNode)
-                old = (t = (TreeNode<K, V>) first).getTreeNode(hash, key);
+            if (first instanceof TreeNode) old = (t = (TreeNode<K, V>) first).getTreeNode(hash, key);
             else {
                 Node<K, V> e = first;
                 K k;
                 do {
-                    if (e.hash == hash &&
-                            ((k = e.key) == key || (key != null && key.equals(k)))) {
+                    if (e.hash == hash && ((k = e.key) == key || (key != null && key.equals(k)))) {
                         old = e;
                         break;
                     }
@@ -1024,15 +885,12 @@ public class HashMap<K, V> extends AbstractMap<K, V>
             if (v != null) {
                 old.value = v;
                 afterNodeAccess(old);
-            } else
-                removeNode(hash, key, null, false, true);
+            } else removeNode(hash, key, null, false, true);
         } else if (v != null) {
-            if (t != null)
-                t.putTreeVal(this, tab, hash, key, v);
+            if (t != null) t.putTreeVal(this, tab, hash, key, v);
             else {
                 tab[i] = newNode(hash, key, v, first);
-                if (binCount >= TREEIFY_THRESHOLD - 1)
-                    treeifyBin(tab, hash);
+                if (binCount >= TREEIFY_THRESHOLD - 1) treeifyBin(tab, hash);
             }
             ++modCount;
             ++size;
@@ -1042,12 +900,9 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     }
 
     @Override
-    public V merge(K key, V value,
-                   BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
-        if (value == null)
-            throw new NullPointerException();
-        if (remappingFunction == null)
-            throw new NullPointerException();
+    public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+        if (value == null) throw new NullPointerException();
+        if (remappingFunction == null) throw new NullPointerException();
         int hash = hash(key);
         Node<K, V>[] tab;
         Node<K, V> first;
@@ -1055,18 +910,14 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         int binCount = 0;
         TreeNode<K, V> t = null;
         Node<K, V> old = null;
-        if (size > threshold || (tab = table) == null ||
-                (n = tab.length) == 0)
-            n = (tab = resize()).length;
+        if (size > threshold || (tab = table) == null || (n = tab.length) == 0) n = (tab = resize()).length;
         if ((first = tab[i = (n - 1) & hash]) != null) {
-            if (first instanceof TreeNode)
-                old = (t = (TreeNode<K, V>) first).getTreeNode(hash, key);
+            if (first instanceof TreeNode) old = (t = (TreeNode<K, V>) first).getTreeNode(hash, key);
             else {
                 Node<K, V> e = first;
                 K k;
                 do {
-                    if (e.hash == hash &&
-                            ((k = e.key) == key || (key != null && key.equals(k)))) {
+                    if (e.hash == hash && ((k = e.key) == key || (key != null && key.equals(k)))) {
                         old = e;
                         break;
                     }
@@ -1076,24 +927,19 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         }
         if (old != null) {
             V v;
-            if (old.value != null)
-                v = remappingFunction.apply(old.value, value);
-            else
-                v = value;
+            if (old.value != null) v = remappingFunction.apply(old.value, value);
+            else v = value;
             if (v != null) {
                 old.value = v;
                 afterNodeAccess(old);
-            } else
-                removeNode(hash, key, null, false, true);
+            } else removeNode(hash, key, null, false, true);
             return v;
         }
         if (value != null) {
-            if (t != null)
-                t.putTreeVal(this, tab, hash, key, value);
+            if (t != null) t.putTreeVal(this, tab, hash, key, value);
             else {
                 tab[i] = newNode(hash, key, value, first);
-                if (binCount >= TREEIFY_THRESHOLD - 1)
-                    treeifyBin(tab, hash);
+                if (binCount >= TREEIFY_THRESHOLD - 1) treeifyBin(tab, hash);
             }
             ++modCount;
             ++size;
@@ -1105,24 +951,21 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     @Override
     public void forEach(BiConsumer<? super K, ? super V> action) {
         Node<K, V>[] tab;
-        if (action == null)
-            throw new NullPointerException();
+        if (action == null) throw new NullPointerException();
         if (size > 0 && (tab = table) != null) {
             int mc = modCount;
             for (int i = 0; i < tab.length; ++i) {
                 for (Node<K, V> e = tab[i]; e != null; e = e.next)
                     action.accept(e.key, e.value);
             }
-            if (modCount != mc)
-                throw new ConcurrentModificationException();
+            if (modCount != mc) throw new ConcurrentModificationException();
         }
     }
 
     @Override
     public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
         Node<K, V>[] tab;
-        if (function == null)
-            throw new NullPointerException();
+        if (function == null) throw new NullPointerException();
         if (size > 0 && (tab = table) != null) {
             int mc = modCount;
             for (int i = 0; i < tab.length; ++i) {
@@ -1130,8 +973,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                     e.value = function.apply(e.key, e.value);
                 }
             }
-            if (modCount != mc)
-                throw new ConcurrentModificationException();
+            if (modCount != mc) throw new ConcurrentModificationException();
         }
     }
 
@@ -1165,9 +1007,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     }
 
     final int capacity() {
-        return (table != null) ? table.length :
-                (threshold > 0) ? threshold :
-                        DEFAULT_INITIAL_CAPACITY;
+        return (table != null) ? table.length : (threshold > 0) ? threshold : DEFAULT_INITIAL_CAPACITY;
     }
 
     /**
@@ -1181,8 +1021,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
      * for each key-value mapping.  The key-value mappings are
      * emitted in no particular order.
      */
-    private void writeObject(java.io.ObjectOutputStream s)
-            throws IOException {
+    private void writeObject(java.io.ObjectOutputStream s) throws IOException {
         int buckets = capacity();
         // Write out the threshold, loadfactor, and any hidden stuff
         s.defaultWriteObject();
@@ -1199,15 +1038,13 @@ public class HashMap<K, V> extends AbstractMap<K, V>
      *                                could not be found
      * @throws IOException            if an I/O error occurs
      */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
 
         ObjectInputStream.GetField fields = s.readFields();
 
         // Read loadFactor (ignore threshold)
         float lf = fields.get("loadFactor", 0.75f);
-        if (lf <= 0 || Float.isNaN(lf))
-            throw new InvalidObjectException("Illegal load factor: " + lf);
+        if (lf <= 0 || Float.isNaN(lf)) throw new InvalidObjectException("Illegal load factor: " + lf);
 
         lf = Math.min(Math.max(0.25f, lf), 4.0f);
         HashMap.UnsafeHolder.putLoadFactor(this, lf);
@@ -1222,28 +1059,20 @@ public class HashMap<K, V> extends AbstractMap<K, V>
             // use defaults
         } else if (mappings > 0) {
             float fc = (float) mappings / lf + 1.0f;
-            int cap = ((fc < DEFAULT_INITIAL_CAPACITY) ?
-                    DEFAULT_INITIAL_CAPACITY :
-                    (fc >= MAXIMUM_CAPACITY) ?
-                            MAXIMUM_CAPACITY :
-                            tableSizeFor((int) fc));
+            int cap = ((fc < DEFAULT_INITIAL_CAPACITY) ? DEFAULT_INITIAL_CAPACITY : (fc >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : tableSizeFor((int) fc));
             float ft = (float) cap * lf;
-            threshold = ((cap < MAXIMUM_CAPACITY && ft < MAXIMUM_CAPACITY) ?
-                    (int) ft : Integer.MAX_VALUE);
+            threshold = ((cap < MAXIMUM_CAPACITY && ft < MAXIMUM_CAPACITY) ? (int) ft : Integer.MAX_VALUE);
 
             // Check Map.Entry[].class since it's the nearest public type to
             // what we're actually creating.
             SharedSecrets.getJavaOISAccess().checkArray(s, Map.Entry[].class, cap);
-            @SuppressWarnings({"rawtypes", "unchecked"})
-            Node<K, V>[] tab = (Node<K, V>[]) new Node[cap];
+            @SuppressWarnings({"rawtypes", "unchecked"}) Node<K, V>[] tab = (Node<K, V>[]) new Node[cap];
             table = tab;
 
             // Read the keys and values, and put the mappings in the HashMap
             for (int i = 0; i < mappings; i++) {
-                @SuppressWarnings("unchecked")
-                K key = (K) s.readObject();
-                @SuppressWarnings("unchecked")
-                V value = (V) s.readObject();
+                @SuppressWarnings("unchecked") K key = (K) s.readObject();
+                @SuppressWarnings("unchecked") V value = (V) s.readObject();
                 putVal(hash(key), key, value, false, false);
             }
         }
@@ -1255,8 +1084,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
             throw new InternalError();
         }
 
-        private static final sun.misc.Unsafe unsafe
-                = sun.misc.Unsafe.getUnsafe();
+        private static final sun.misc.Unsafe unsafe = sun.misc.Unsafe.getUnsafe();
         private static final long LF_OFFSET;
 
         static {
@@ -1299,10 +1127,8 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         final Node<K, V> nextNode() {
             Node<K, V>[] t;
             Node<K, V> e = next;
-            if (modCount != expectedModCount)
-                throw new ConcurrentModificationException();
-            if (e == null)
-                throw new NoSuchElementException();
+            if (modCount != expectedModCount) throw new ConcurrentModificationException();
+            if (e == null) throw new NoSuchElementException();
             if ((next = (current = e).next) == null && (t = table) != null) {
                 do {
                 } while (index < t.length && (next = t[index++]) == null);
@@ -1312,10 +1138,8 @@ public class HashMap<K, V> extends AbstractMap<K, V>
 
         public final void remove() {
             Node<K, V> p = current;
-            if (p == null)
-                throw new IllegalStateException();
-            if (modCount != expectedModCount)
-                throw new ConcurrentModificationException();
+            if (p == null) throw new IllegalStateException();
+            if (modCount != expectedModCount) throw new ConcurrentModificationException();
             current = null;
             K key = p.key;
             removeNode(hash(key), key, null, false, false);
@@ -1323,22 +1147,19 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         }
     }
 
-    final class KeyIterator extends HashIterator
-            implements Iterator<K> {
+    final class KeyIterator extends HashIterator implements Iterator<K> {
         public final K next() {
             return nextNode().key;
         }
     }
 
-    final class ValueIterator extends HashIterator
-            implements Iterator<V> {
+    final class ValueIterator extends HashIterator implements Iterator<V> {
         public final V next() {
             return nextNode().value;
         }
     }
 
-    final class EntryIterator extends HashIterator
-            implements Iterator<Map.Entry<K, V>> {
+    final class EntryIterator extends HashIterator implements Iterator<Map.Entry<K, V>> {
         public final Map.Entry<K, V> next() {
             return nextNode();
         }
@@ -1350,14 +1171,12 @@ public class HashMap<K, V> extends AbstractMap<K, V>
     static class HashMapSpliterator<K, V> {
         final HashMap<K, V> map;
         Node<K, V> current;          // current node
-        int index;                  // current index, modified on advance/split
+        int index;                  // 当前索引，提前/拆分时修改
         int fence;                  // one past last index
         int est;                    // size estimate
         int expectedModCount;       // for comodification checks
 
-        HashMapSpliterator(HashMap<K, V> m, int origin,
-                           int fence, int est,
-                           int expectedModCount) {
+        HashMapSpliterator(HashMap<K, V> m, int origin, int fence, int est, int expectedModCount) {
             this.map = m;
             this.index = origin;
             this.fence = fence;
@@ -1383,64 +1202,51 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         }
     }
 
-    static final class KeySpliterator<K, V>
-            extends HashMapSpliterator<K, V>
-            implements Spliterator<K> {
-        KeySpliterator(HashMap<K, V> m, int origin, int fence, int est,
-                       int expectedModCount) {
+    static final class KeySpliterator<K, V> extends HashMapSpliterator<K, V> implements Spliterator<K> {
+        KeySpliterator(HashMap<K, V> m, int origin, int fence, int est, int expectedModCount) {
             super(m, origin, fence, est, expectedModCount);
         }
 
         public KeySpliterator<K, V> trySplit() {
             int hi = getFence(), lo = index, mid = (lo + hi) >>> 1;
-            return (lo >= mid || current != null) ? null :
-                    new KeySpliterator<>(map, lo, index = mid, est >>>= 1,
-                            expectedModCount);
+            return (lo >= mid || current != null) ? null : new KeySpliterator<>(map, lo, index = mid, est >>>= 1, expectedModCount);
         }
 
         public void forEachRemaining(Consumer<? super K> action) {
             int i, hi, mc;
-            if (action == null)
-                throw new NullPointerException();
+            if (action == null) throw new NullPointerException();
             HashMap<K, V> m = map;
             Node<K, V>[] tab = m.table;
             if ((hi = fence) < 0) {
                 mc = expectedModCount = m.modCount;
                 hi = fence = (tab == null) ? 0 : tab.length;
-            } else
-                mc = expectedModCount;
-            if (tab != null && tab.length >= hi &&
-                    (i = index) >= 0 && (i < (index = hi) || current != null)) {
+            } else mc = expectedModCount;
+            if (tab != null && tab.length >= hi && (i = index) >= 0 && (i < (index = hi) || current != null)) {
                 Node<K, V> p = current;
                 current = null;
                 do {
-                    if (p == null)
-                        p = tab[i++];
+                    if (p == null) p = tab[i++];
                     else {
                         action.accept(p.key);
                         p = p.next;
                     }
                 } while (p != null || i < hi);
-                if (m.modCount != mc)
-                    throw new ConcurrentModificationException();
+                if (m.modCount != mc) throw new ConcurrentModificationException();
             }
         }
 
         public boolean tryAdvance(Consumer<? super K> action) {
             int hi;
-            if (action == null)
-                throw new NullPointerException();
+            if (action == null) throw new NullPointerException();
             Node<K, V>[] tab = map.table;
             if (tab != null && tab.length >= (hi = getFence()) && index >= 0) {
                 while (current != null || index < hi) {
-                    if (current == null)
-                        current = tab[index++];
+                    if (current == null) current = tab[index++];
                     else {
                         K k = current.key;
                         current = current.next;
                         action.accept(k);
-                        if (map.modCount != expectedModCount)
-                            throw new ConcurrentModificationException();
+                        if (map.modCount != expectedModCount) throw new ConcurrentModificationException();
                         return true;
                     }
                 }
@@ -1449,69 +1255,55 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         }
 
         public int characteristics() {
-            return (fence < 0 || est == map.size ? Spliterator.SIZED : 0) |
-                    Spliterator.DISTINCT;
+            return (fence < 0 || est == map.size ? Spliterator.SIZED : 0) | Spliterator.DISTINCT;
         }
     }
 
-    static final class ValueSpliterator<K, V>
-            extends HashMapSpliterator<K, V>
-            implements Spliterator<V> {
-        ValueSpliterator(HashMap<K, V> m, int origin, int fence, int est,
-                         int expectedModCount) {
+    static final class ValueSpliterator<K, V> extends HashMapSpliterator<K, V> implements Spliterator<V> {
+        ValueSpliterator(HashMap<K, V> m, int origin, int fence, int est, int expectedModCount) {
             super(m, origin, fence, est, expectedModCount);
         }
 
         public ValueSpliterator<K, V> trySplit() {
             int hi = getFence(), lo = index, mid = (lo + hi) >>> 1;
-            return (lo >= mid || current != null) ? null :
-                    new ValueSpliterator<>(map, lo, index = mid, est >>>= 1,
-                            expectedModCount);
+            return (lo >= mid || current != null) ? null : new ValueSpliterator<>(map, lo, index = mid, est >>>= 1, expectedModCount);
         }
 
         public void forEachRemaining(Consumer<? super V> action) {
             int i, hi, mc;
-            if (action == null)
-                throw new NullPointerException();
+            if (action == null) throw new NullPointerException();
             HashMap<K, V> m = map;
             Node<K, V>[] tab = m.table;
             if ((hi = fence) < 0) {
                 mc = expectedModCount = m.modCount;
                 hi = fence = (tab == null) ? 0 : tab.length;
-            } else
-                mc = expectedModCount;
-            if (tab != null && tab.length >= hi &&
-                    (i = index) >= 0 && (i < (index = hi) || current != null)) {
+            } else mc = expectedModCount;
+            if (tab != null && tab.length >= hi && (i = index) >= 0 && (i < (index = hi) || current != null)) {
                 Node<K, V> p = current;
                 current = null;
                 do {
-                    if (p == null)
-                        p = tab[i++];
+                    if (p == null) p = tab[i++];
                     else {
                         action.accept(p.value);
                         p = p.next;
                     }
                 } while (p != null || i < hi);
-                if (m.modCount != mc)
-                    throw new ConcurrentModificationException();
+                if (m.modCount != mc) throw new ConcurrentModificationException();
             }
         }
 
         public boolean tryAdvance(Consumer<? super V> action) {
             int hi;
-            if (action == null)
-                throw new NullPointerException();
+            if (action == null) throw new NullPointerException();
             Node<K, V>[] tab = map.table;
             if (tab != null && tab.length >= (hi = getFence()) && index >= 0) {
                 while (current != null || index < hi) {
-                    if (current == null)
-                        current = tab[index++];
+                    if (current == null) current = tab[index++];
                     else {
                         V v = current.value;
                         current = current.next;
                         action.accept(v);
-                        if (map.modCount != expectedModCount)
-                            throw new ConcurrentModificationException();
+                        if (map.modCount != expectedModCount) throw new ConcurrentModificationException();
                         return true;
                     }
                 }
@@ -1524,64 +1316,51 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         }
     }
 
-    static final class EntrySpliterator<K, V>
-            extends HashMapSpliterator<K, V>
-            implements Spliterator<Map.Entry<K, V>> {
-        EntrySpliterator(HashMap<K, V> m, int origin, int fence, int est,
-                         int expectedModCount) {
+    static final class EntrySpliterator<K, V> extends HashMapSpliterator<K, V> implements Spliterator<Map.Entry<K, V>> {
+        EntrySpliterator(HashMap<K, V> m, int origin, int fence, int est, int expectedModCount) {
             super(m, origin, fence, est, expectedModCount);
         }
 
         public EntrySpliterator<K, V> trySplit() {
             int hi = getFence(), lo = index, mid = (lo + hi) >>> 1;
-            return (lo >= mid || current != null) ? null :
-                    new EntrySpliterator<>(map, lo, index = mid, est >>>= 1,
-                            expectedModCount);
+            return (lo >= mid || current != null) ? null : new EntrySpliterator<>(map, lo, index = mid, est >>>= 1, expectedModCount);
         }
 
         public void forEachRemaining(Consumer<? super Map.Entry<K, V>> action) {
             int i, hi, mc;
-            if (action == null)
-                throw new NullPointerException();
+            if (action == null) throw new NullPointerException();
             HashMap<K, V> m = map;
             Node<K, V>[] tab = m.table;
             if ((hi = fence) < 0) {
                 mc = expectedModCount = m.modCount;
                 hi = fence = (tab == null) ? 0 : tab.length;
-            } else
-                mc = expectedModCount;
-            if (tab != null && tab.length >= hi &&
-                    (i = index) >= 0 && (i < (index = hi) || current != null)) {
+            } else mc = expectedModCount;
+            if (tab != null && tab.length >= hi && (i = index) >= 0 && (i < (index = hi) || current != null)) {
                 Node<K, V> p = current;
                 current = null;
                 do {
-                    if (p == null)
-                        p = tab[i++];
+                    if (p == null) p = tab[i++];
                     else {
                         action.accept(p);
                         p = p.next;
                     }
                 } while (p != null || i < hi);
-                if (m.modCount != mc)
-                    throw new ConcurrentModificationException();
+                if (m.modCount != mc) throw new ConcurrentModificationException();
             }
         }
 
         public boolean tryAdvance(Consumer<? super Map.Entry<K, V>> action) {
             int hi;
-            if (action == null)
-                throw new NullPointerException();
+            if (action == null) throw new NullPointerException();
             Node<K, V>[] tab = map.table;
             if (tab != null && tab.length >= (hi = getFence()) && index >= 0) {
                 while (current != null || index < hi) {
-                    if (current == null)
-                        current = tab[index++];
+                    if (current == null) current = tab[index++];
                     else {
                         Node<K, V> e = current;
                         current = current.next;
                         action.accept(e);
-                        if (map.modCount != expectedModCount)
-                            throw new ConcurrentModificationException();
+                        if (map.modCount != expectedModCount) throw new ConcurrentModificationException();
                         return true;
                     }
                 }
@@ -1590,8 +1369,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         }
 
         public int characteristics() {
-            return (fence < 0 || est == map.size ? Spliterator.SIZED : 0) |
-                    Spliterator.DISTINCT;
+            return (fence < 0 || est == map.size ? Spliterator.SIZED : 0) | Spliterator.DISTINCT;
         }
     }
 
@@ -1687,8 +1465,7 @@ public class HashMap<K, V> extends AbstractMap<K, V>
          */
         final TreeNode<K, V> root() {
             for (TreeNode<K, V> r = this, p; ; ) {
-                if ((p = r.parent) == null)
-                    return r;
+                if ((p = r.parent) == null) return r;
                 r = p;
             }
         }
@@ -1705,12 +1482,9 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                     Node<K, V> rn;
                     tab[index] = root;
                     TreeNode<K, V> rp = root.prev;
-                    if ((rn = root.next) != null)
-                        ((TreeNode<K, V>) rn).prev = rp;
-                    if (rp != null)
-                        rp.next = rn;
-                    if (first != null)
-                        first.prev = root;
+                    if ((rn = root.next) != null) ((TreeNode<K, V>) rn).prev = rp;
+                    if (rp != null) rp.next = rn;
+                    if (first != null) first.prev = root;
                     root.next = first;
                     root.prev = null;
                 }
@@ -1729,24 +1503,15 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                 int ph, dir;
                 K pk;
                 TreeNode<K, V> pl = p.left, pr = p.right, q;
-                if ((ph = p.hash) > h)
-                    p = pl;
-                else if (ph < h)
-                    p = pr;
-                else if ((pk = p.key) == k || (k != null && k.equals(pk)))
-                    return p;
-                else if (pl == null)
-                    p = pr;
-                else if (pr == null)
-                    p = pl;
-                else if ((kc != null ||
-                        (kc = comparableClassFor(k)) != null) &&
-                        (dir = compareComparables(kc, k, pk)) != 0)
+                if ((ph = p.hash) > h) p = pl;
+                else if (ph < h) p = pr;
+                else if ((pk = p.key) == k || (k != null && k.equals(pk))) return p;
+                else if (pl == null) p = pr;
+                else if (pr == null) p = pl;
+                else if ((kc != null || (kc = comparableClassFor(k)) != null) && (dir = compareComparables(kc, k, pk)) != 0)
                     p = (dir < 0) ? pl : pr;
-                else if ((q = pr.find(h, k, kc)) != null)
-                    return q;
-                else
-                    p = pl;
+                else if ((q = pr.find(h, k, kc)) != null) return q;
+                else p = pl;
             } while (p != null);
             return null;
         }
@@ -1767,16 +1532,13 @@ public class HashMap<K, V> extends AbstractMap<K, V>
          */
         static int tieBreakOrder(Object a, Object b) {
             int d;
-            if (a == null || b == null ||
-                    (d = a.getClass().getName().
-                            compareTo(b.getClass().getName())) == 0)
-                d = (System.identityHashCode(a) <= System.identityHashCode(b) ?
-                        -1 : 1);
+            if (a == null || b == null || (d = a.getClass().getName().compareTo(b.getClass().getName())) == 0)
+                d = (System.identityHashCode(a) <= System.identityHashCode(b) ? -1 : 1);
             return d;
         }
 
         /**
-         * Forms tree of the nodes linked from this node.
+         * 从此节点开始树化
          */
         final void treeify(Node<K, V>[] tab) {
             TreeNode<K, V> root = null;
@@ -1794,22 +1556,16 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                     for (TreeNode<K, V> p = root; ; ) {
                         int dir, ph;
                         K pk = p.key;
-                        if ((ph = p.hash) > h)
-                            dir = -1;
-                        else if (ph < h)
-                            dir = 1;
-                        else if ((kc == null &&
-                                (kc = comparableClassFor(k)) == null) ||
-                                (dir = compareComparables(kc, k, pk)) == 0)
+                        if ((ph = p.hash) > h) dir = -1;
+                        else if (ph < h) dir = 1;
+                        else if ((kc == null && (kc = comparableClassFor(k)) == null) || (dir = compareComparables(kc, k, pk)) == 0)
                             dir = tieBreakOrder(k, pk);
 
                         TreeNode<K, V> xp = p;
                         if ((p = (dir <= 0) ? p.left : p.right) == null) {
                             x.parent = xp;
-                            if (dir <= 0)
-                                xp.left = x;
-                            else
-                                xp.right = x;
+                            if (dir <= 0) xp.left = x;
+                            else xp.right = x;
                             root = balanceInsertion(root, x);
                             break;
                         }
@@ -1827,10 +1583,8 @@ public class HashMap<K, V> extends AbstractMap<K, V>
             Node<K, V> hd = null, tl = null;
             for (Node<K, V> q = this; q != null; q = q.next) {
                 Node<K, V> p = map.replacementNode(q, null);
-                if (tl == null)
-                    hd = p;
-                else
-                    tl.next = p;
+                if (tl == null) hd = p;
+                else tl.next = p;
                 tl = p;
             }
             return hd;
@@ -1839,30 +1593,21 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         /**
          * Tree version of putVal.
          */
-        final TreeNode<K, V> putTreeVal(HashMap<K, V> map, Node<K, V>[] tab,
-                                        int h, K k, V v) {
+        final TreeNode<K, V> putTreeVal(HashMap<K, V> map, Node<K, V>[] tab, int h, K k, V v) {
             Class<?> kc = null;
             boolean searched = false;
             TreeNode<K, V> root = (parent != null) ? root() : this;
             for (TreeNode<K, V> p = root; ; ) {
                 int dir, ph;
                 K pk;
-                if ((ph = p.hash) > h)
-                    dir = -1;
-                else if (ph < h)
-                    dir = 1;
-                else if ((pk = p.key) == k || (k != null && k.equals(pk)))
-                    return p;
-                else if ((kc == null &&
-                        (kc = comparableClassFor(k)) == null) ||
-                        (dir = compareComparables(kc, k, pk)) == 0) {
+                if ((ph = p.hash) > h) dir = -1;
+                else if (ph < h) dir = 1;
+                else if ((pk = p.key) == k || (k != null && k.equals(pk))) return p;
+                else if ((kc == null && (kc = comparableClassFor(k)) == null) || (dir = compareComparables(kc, k, pk)) == 0) {
                     if (!searched) {
                         TreeNode<K, V> q, ch;
                         searched = true;
-                        if (((ch = p.left) != null &&
-                                (q = ch.find(h, k, kc)) != null) ||
-                                ((ch = p.right) != null &&
-                                        (q = ch.find(h, k, kc)) != null))
+                        if (((ch = p.left) != null && (q = ch.find(h, k, kc)) != null) || ((ch = p.right) != null && (q = ch.find(h, k, kc)) != null))
                             return q;
                     }
                     dir = tieBreakOrder(k, pk);
@@ -1872,14 +1617,11 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                 if ((p = (dir <= 0) ? p.left : p.right) == null) {
                     Node<K, V> xpn = xp.next;
                     TreeNode<K, V> x = map.newTreeNode(h, k, v, xpn);
-                    if (dir <= 0)
-                        xp.left = x;
-                    else
-                        xp.right = x;
+                    if (dir <= 0) xp.left = x;
+                    else xp.right = x;
                     xp.next = x;
                     x.parent = x.prev = xp;
-                    if (xpn != null)
-                        ((TreeNode<K, V>) xpn).prev = x;
+                    if (xpn != null) ((TreeNode<K, V>) xpn).prev = x;
                     moveRootToFront(tab, balanceInsertion(root, x));
                     return null;
                 }
@@ -1896,29 +1638,18 @@ public class HashMap<K, V> extends AbstractMap<K, V>
          * the bin is converted back to a plain bin. (The test triggers
          * somewhere between 2 and 6 nodes, depending on tree structure).
          */
-        final void removeTreeNode(HashMap<K, V> map, Node<K, V>[] tab,
-                                  boolean movable) {
+        final void removeTreeNode(HashMap<K, V> map, Node<K, V>[] tab, boolean movable) {
             int n;
-            if (tab == null || (n = tab.length) == 0)
-                return;
+            if (tab == null || (n = tab.length) == 0) return;
             int index = (n - 1) & hash;
             TreeNode<K, V> first = (TreeNode<K, V>) tab[index], root = first, rl;
             TreeNode<K, V> succ = (TreeNode<K, V>) next, pred = prev;
-            if (pred == null)
-                tab[index] = first = succ;
-            else
-                pred.next = succ;
-            if (succ != null)
-                succ.prev = pred;
-            if (first == null)
-                return;
-            if (root.parent != null)
-                root = root.root();
-            if (root == null
-                    || (movable
-                    && (root.right == null
-                    || (rl = root.left) == null
-                    || rl.left == null))) {
+            if (pred == null) tab[index] = first = succ;
+            else pred.next = succ;
+            if (succ != null) succ.prev = pred;
+            if (first == null) return;
+            if (root.parent != null) root = root.root();
+            if (root == null || (movable && (root.right == null || (rl = root.left) == null || rl.left == null))) {
                 tab[index] = first.untreeify(map);  // too small
                 return;
             }
@@ -1938,43 +1669,27 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                 } else {
                     TreeNode<K, V> sp = s.parent;
                     if ((p.parent = sp) != null) {
-                        if (s == sp.left)
-                            sp.left = p;
-                        else
-                            sp.right = p;
+                        if (s == sp.left) sp.left = p;
+                        else sp.right = p;
                     }
-                    if ((s.right = pr) != null)
-                        pr.parent = s;
+                    if ((s.right = pr) != null) pr.parent = s;
                 }
                 p.left = null;
-                if ((p.right = sr) != null)
-                    sr.parent = p;
-                if ((s.left = pl) != null)
-                    pl.parent = s;
-                if ((s.parent = pp) == null)
-                    root = s;
-                else if (p == pp.left)
-                    pp.left = s;
-                else
-                    pp.right = s;
-                if (sr != null)
-                    replacement = sr;
-                else
-                    replacement = p;
-            } else if (pl != null)
-                replacement = pl;
-            else if (pr != null)
-                replacement = pr;
-            else
-                replacement = p;
+                if ((p.right = sr) != null) sr.parent = p;
+                if ((s.left = pl) != null) pl.parent = s;
+                if ((s.parent = pp) == null) root = s;
+                else if (p == pp.left) pp.left = s;
+                else pp.right = s;
+                if (sr != null) replacement = sr;
+                else replacement = p;
+            } else if (pl != null) replacement = pl;
+            else if (pr != null) replacement = pr;
+            else replacement = p;
             if (replacement != p) {
                 TreeNode<K, V> pp = replacement.parent = p.parent;
-                if (pp == null)
-                    root = replacement;
-                else if (p == pp.left)
-                    pp.left = replacement;
-                else
-                    pp.right = replacement;
+                if (pp == null) root = replacement;
+                else if (p == pp.left) pp.left = replacement;
+                else pp.right = replacement;
                 p.left = p.right = p.parent = null;
             }
 
@@ -1984,29 +1699,19 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                 TreeNode<K, V> pp = p.parent;
                 p.parent = null;
                 if (pp != null) {
-                    if (p == pp.left)
-                        pp.left = null;
-                    else if (p == pp.right)
-                        pp.right = null;
+                    if (p == pp.left) pp.left = null;
+                    else if (p == pp.right) pp.right = null;
                 }
             }
-            if (movable)
-                moveRootToFront(tab, r);
+            if (movable) moveRootToFront(tab, r);
         }
 
         /**
-         * Splits nodes in a tree bin into lower and upper tree bins,
-         * or untreeifies if now too small. Called only from resize;
-         * see above discussion about split bits and indices.
-         *
-         * @param map   the map
-         * @param tab   the table for recording bin heads
-         * @param index the index of the table being split
-         * @param bit   the bit of hash to split on
+         * 把数的节点分成 较低的数和较高的数 或者如果现在太小，则非树化
          */
         final void split(HashMap<K, V> map, Node<K, V>[] tab, int index, int bit) {
             TreeNode<K, V> b = this;
-            // Relink into lo and hi lists, preserving order
+            // 重新链接到lo和hi列表，保持顺序
             TreeNode<K, V> loHead = null, loTail = null;
             TreeNode<K, V> hiHead = null, hiTail = null;
             int lc = 0, hc = 0;
@@ -2014,25 +1719,20 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                 next = (TreeNode<K, V>) e.next;
                 e.next = null;
                 if ((e.hash & bit) == 0) {
-                    if ((e.prev = loTail) == null)
-                        loHead = e;
-                    else
-                        loTail.next = e;
+                    if ((e.prev = loTail) == null) loHead = e;
+                    else loTail.next = e;
                     loTail = e;
                     ++lc;
                 } else {
-                    if ((e.prev = hiTail) == null)
-                        hiHead = e;
-                    else
-                        hiTail.next = e;
+                    if ((e.prev = hiTail) == null) hiHead = e;
+                    else hiTail.next = e;
                     hiTail = e;
                     ++hc;
                 }
             }
 
             if (loHead != null) {
-                if (lc <= UNTREEIFY_THRESHOLD)
-                    tab[index] = loHead.untreeify(map);
+                if (lc <= UNTREEIFY_THRESHOLD) tab[index] = loHead.untreeify(map);
                 else {
                     tab[index] = loHead;
                     if (hiHead != null) // (else is already treeified)
@@ -2040,12 +1740,10 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                 }
             }
             if (hiHead != null) {
-                if (hc <= UNTREEIFY_THRESHOLD)
-                    tab[index + bit] = hiHead.untreeify(map);
+                if (hc <= UNTREEIFY_THRESHOLD) tab[index + bit] = hiHead.untreeify(map);
                 else {
                     tab[index + bit] = hiHead;
-                    if (loHead != null)
-                        hiHead.treeify(tab);
+                    if (loHead != null) hiHead.treeify(tab);
                 }
             }
         }
@@ -2053,51 +1751,39 @@ public class HashMap<K, V> extends AbstractMap<K, V>
         /* ------------------------------------------------------------ */
         // Red-black tree methods, all adapted from CLR
 
-        static <K, V> TreeNode<K, V> rotateLeft(TreeNode<K, V> root,
-                                                TreeNode<K, V> p) {
+        static <K, V> TreeNode<K, V> rotateLeft(TreeNode<K, V> root, TreeNode<K, V> p) {
             TreeNode<K, V> r, pp, rl;
             if (p != null && (r = p.right) != null) {
-                if ((rl = p.right = r.left) != null)
-                    rl.parent = p;
-                if ((pp = r.parent = p.parent) == null)
-                    (root = r).red = false;
-                else if (pp.left == p)
-                    pp.left = r;
-                else
-                    pp.right = r;
+                if ((rl = p.right = r.left) != null) rl.parent = p;
+                if ((pp = r.parent = p.parent) == null) (root = r).red = false;
+                else if (pp.left == p) pp.left = r;
+                else pp.right = r;
                 r.left = p;
                 p.parent = r;
             }
             return root;
         }
 
-        static <K, V> TreeNode<K, V> rotateRight(TreeNode<K, V> root,
-                                                 TreeNode<K, V> p) {
+        static <K, V> TreeNode<K, V> rotateRight(TreeNode<K, V> root, TreeNode<K, V> p) {
             TreeNode<K, V> l, pp, lr;
             if (p != null && (l = p.left) != null) {
-                if ((lr = p.left = l.right) != null)
-                    lr.parent = p;
-                if ((pp = l.parent = p.parent) == null)
-                    (root = l).red = false;
-                else if (pp.right == p)
-                    pp.right = l;
-                else
-                    pp.left = l;
+                if ((lr = p.left = l.right) != null) lr.parent = p;
+                if ((pp = l.parent = p.parent) == null) (root = l).red = false;
+                else if (pp.right == p) pp.right = l;
+                else pp.left = l;
                 l.right = p;
                 p.parent = l;
             }
             return root;
         }
 
-        static <K, V> TreeNode<K, V> balanceInsertion(TreeNode<K, V> root,
-                                                      TreeNode<K, V> x) {
+        static <K, V> TreeNode<K, V> balanceInsertion(TreeNode<K, V> root, TreeNode<K, V> x) {
             x.red = true;
             for (TreeNode<K, V> xp, xpp, xppl, xppr; ; ) {
                 if ((xp = x.parent) == null) {
                     x.red = false;
                     return x;
-                } else if (!xp.red || (xpp = xp.parent) == null)
-                    return root;
+                } else if (!xp.red || (xpp = xp.parent) == null) return root;
                 if (xp == (xppl = xpp.left)) {
                     if ((xppr = xpp.right) != null && xppr.red) {
                         xppr.red = false;
@@ -2140,11 +1826,9 @@ public class HashMap<K, V> extends AbstractMap<K, V>
             }
         }
 
-        static <K, V> TreeNode<K, V> balanceDeletion(TreeNode<K, V> root,
-                                                     TreeNode<K, V> x) {
+        static <K, V> TreeNode<K, V> balanceDeletion(TreeNode<K, V> root, TreeNode<K, V> x) {
             for (TreeNode<K, V> xp, xpl, xpr; ; ) {
-                if (x == null || x == root)
-                    return root;
+                if (x == null || x == root) return root;
                 else if ((xp = x.parent) == null) {
                     x.red = false;
                     return x;
@@ -2158,27 +1842,22 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                         root = rotateLeft(root, xp);
                         xpr = (xp = x.parent) == null ? null : xp.right;
                     }
-                    if (xpr == null)
-                        x = xp;
+                    if (xpr == null) x = xp;
                     else {
                         TreeNode<K, V> sl = xpr.left, sr = xpr.right;
-                        if ((sr == null || !sr.red) &&
-                                (sl == null || !sl.red)) {
+                        if ((sr == null || !sr.red) && (sl == null || !sl.red)) {
                             xpr.red = true;
                             x = xp;
                         } else {
                             if (sr == null || !sr.red) {
-                                if (sl != null)
-                                    sl.red = false;
+                                if (sl != null) sl.red = false;
                                 xpr.red = true;
                                 root = rotateRight(root, xpr);
-                                xpr = (xp = x.parent) == null ?
-                                        null : xp.right;
+                                xpr = (xp = x.parent) == null ? null : xp.right;
                             }
                             if (xpr != null) {
                                 xpr.red = (xp == null) ? false : xp.red;
-                                if ((sr = xpr.right) != null)
-                                    sr.red = false;
+                                if ((sr = xpr.right) != null) sr.red = false;
                             }
                             if (xp != null) {
                                 xp.red = false;
@@ -2194,27 +1873,22 @@ public class HashMap<K, V> extends AbstractMap<K, V>
                         root = rotateRight(root, xp);
                         xpl = (xp = x.parent) == null ? null : xp.left;
                     }
-                    if (xpl == null)
-                        x = xp;
+                    if (xpl == null) x = xp;
                     else {
                         TreeNode<K, V> sl = xpl.left, sr = xpl.right;
-                        if ((sl == null || !sl.red) &&
-                                (sr == null || !sr.red)) {
+                        if ((sl == null || !sl.red) && (sr == null || !sr.red)) {
                             xpl.red = true;
                             x = xp;
                         } else {
                             if (sl == null || !sl.red) {
-                                if (sr != null)
-                                    sr.red = false;
+                                if (sr != null) sr.red = false;
                                 xpl.red = true;
                                 root = rotateLeft(root, xpl);
-                                xpl = (xp = x.parent) == null ?
-                                        null : xp.left;
+                                xpl = (xp = x.parent) == null ? null : xp.left;
                             }
                             if (xpl != null) {
                                 xpl.red = (xp == null) ? false : xp.red;
-                                if ((sl = xpl.left) != null)
-                                    sl.red = false;
+                                if ((sl = xpl.left) != null) sl.red = false;
                             }
                             if (xp != null) {
                                 xp.red = false;
@@ -2231,24 +1905,15 @@ public class HashMap<K, V> extends AbstractMap<K, V>
          * Recursive invariant check
          */
         static <K, V> boolean checkInvariants(TreeNode<K, V> t) {
-            TreeNode<K, V> tp = t.parent, tl = t.left, tr = t.right,
-                    tb = t.prev, tn = (TreeNode<K, V>) t.next;
-            if (tb != null && tb.next != t)
-                return false;
-            if (tn != null && tn.prev != t)
-                return false;
-            if (tp != null && t != tp.left && t != tp.right)
-                return false;
-            if (tl != null && (tl.parent != t || tl.hash > t.hash))
-                return false;
-            if (tr != null && (tr.parent != t || tr.hash < t.hash))
-                return false;
-            if (t.red && tl != null && tl.red && tr != null && tr.red)
-                return false;
-            if (tl != null && !checkInvariants(tl))
-                return false;
-            if (tr != null && !checkInvariants(tr))
-                return false;
+            TreeNode<K, V> tp = t.parent, tl = t.left, tr = t.right, tb = t.prev, tn = (TreeNode<K, V>) t.next;
+            if (tb != null && tb.next != t) return false;
+            if (tn != null && tn.prev != t) return false;
+            if (tp != null && t != tp.left && t != tp.right) return false;
+            if (tl != null && (tl.parent != t || tl.hash > t.hash)) return false;
+            if (tr != null && (tr.parent != t || tr.hash < t.hash)) return false;
+            if (t.red && tl != null && tl.red && tr != null && tr.red) return false;
+            if (tl != null && !checkInvariants(tl)) return false;
+            if (tr != null && !checkInvariants(tr)) return false;
             return true;
         }
     }
