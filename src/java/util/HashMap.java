@@ -17,40 +17,13 @@ import sun.misc.SharedSecrets;
 public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Cloneable, Serializable {
 
     private static final long serialVersionUID = 362498820763181265L;
-
-    /**
-     * 默认初始容量 16 -必须是2的幂次
-     */
     static final int DEFAULT_INITIAL_CAPACITY = 1 << 4;
-
-    /**
-     * 最大容量 2的30幂次
-     */
     static final int MAXIMUM_CAPACITY = 1 << 30;
-
-    /**
-     * 负载因子 0.75
-     */
     static final float DEFAULT_LOAD_FACTOR = 0.75f;
-
-    /**
-     * 链表转红黑树的临界值 8
-     */
     static final int TREEIFY_THRESHOLD = 8;
-
-    /**
-     * 红黑树转链表的临界值 6
-     */
     static final int UNTREEIFY_THRESHOLD = 6;
-
-    /**
-     * 最小红黑树的容量
-     */
     static final int MIN_TREEIFY_CAPACITY = 64;
 
-    /**
-     * 哈希表桶节点
-     */
     static class Node<K, V> implements Map.Entry<K, V> {
         final int hash;
         final K key;
@@ -98,16 +71,13 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
 
     /* ---------------- 静态公用 -------------- */
 
-    /**
-     * key的hashCode
-     */
     static final int hash(Object key) {
         int h;
         return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
     }
 
     /**
-     * 如果x的Class的形式为“Class C implements Comparable<C>”，则返回x的Class,否则为空
+     * 判断实现  Comparable 接口则返回x的Class,否则为空
      */
     static Class<?> comparableClassFor(Object x) {
         if (x instanceof Comparable) {
@@ -128,16 +98,12 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /**
-     * 如果x与kc（k的筛选可比性）匹配，则返回k.compareTo（x）,否则为0
+     * 如果x与kc（k的筛选可比性）匹配,则返回k.compareTo（x）,否则为0
      */
-    @SuppressWarnings({"rawtypes", "unchecked"}) // for cast to Comparable
     static int compareComparables(Class<?> kc, Object k, Object x) {
         return (x == null || x.getClass() != kc ? 0 : ((Comparable) k).compareTo(x));
     }
 
-    /**
-     * 返回一个给定数字的最小2次幂数
-     */
     static final int tableSizeFor(int cap) {
         int n = cap - 1;
         n |= n >>> 1;
@@ -150,41 +116,20 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
 
     /* ---------------- 字段 -------------- */
 
-    /**
-     * 该表在首次使用时初始化，并调整大小为必要的。当被分配时，长度总是二的幂
-     */
     transient Node<K, V>[] table;
 
-    /**
-     * 保留缓存的entrySet()
-     */
     transient Set<Map.Entry<K, V>> entrySet;
 
-    /**
-     * map含有的键值对数
-     */
     transient int size;
 
-    /**
-     * 修改次数,实现快速失败 ConcurrentModificationException
-     */
     transient int modCount;
 
-    /**
-     * 扩容阈值(容量 *负载因子)
-     */
     int threshold;
 
-    /**
-     * 负载因子
-     */
     final float loadFactor;
 
-    /* ---------------- Public operations -------------- */
+    /* ---------------- 公用操作 -------------- */
 
-    /**
-     * 使用指定的初始值构造一个空的 HashMap 容量和负载系数
-     */
     public HashMap(int initialCapacity, float loadFactor) {
         if (initialCapacity < 0) throw new IllegalArgumentException("Illegal initial capacity: " + initialCapacity);
         if (initialCapacity > MAXIMUM_CAPACITY) initialCapacity = MAXIMUM_CAPACITY;
@@ -194,29 +139,14 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         this.threshold = tableSizeFor(initialCapacity);
     }
 
-    /**
-     * 使用指定的初始值构造一个空的 HashMap 容量和 默认负载系数 (0.75)
-     */
     public HashMap(int initialCapacity) {
         this(initialCapacity, DEFAULT_LOAD_FACTOR);
     }
 
-    /**
-     * 构造一个空的 HashMap 容量(16) 和 默认负载系数 (0.75)
-     */
     public HashMap() {
         this.loadFactor = DEFAULT_LOAD_FACTOR;
     }
 
-    /**
-     * Constructs a new <tt>HashMap</tt> with the same mappings as the
-     * specified <tt>Map</tt>.  The <tt>HashMap</tt> is created with
-     * default load factor (0.75) and an initial capacity sufficient to
-     * hold the mappings in the specified <tt>Map</tt>.
-     *
-     * @param m the map whose mappings are to be placed in this map
-     * @throws NullPointerException if the specified map is null
-     */
     public HashMap(Map<? extends K, ? extends V> m) {
         this.loadFactor = DEFAULT_LOAD_FACTOR;
         putMapEntries(m, false);
@@ -245,53 +175,19 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         }
     }
 
-    /**
-     * Returns the number of key-value mappings in this map.
-     *
-     * @return the number of key-value mappings in this map
-     */
     public int size() {
         return size;
     }
 
-    /**
-     * Returns <tt>true</tt> if this map contains no key-value mappings.
-     *
-     * @return <tt>true</tt> if this map contains no key-value mappings
-     */
     public boolean isEmpty() {
         return size == 0;
     }
 
-    /**
-     * Returns the value to which the specified key is mapped,
-     * or {@code null} if this map contains no mapping for the key.
-     *
-     * <p>More formally, if this map contains a mapping from a key
-     * {@code k} to a value {@code v} such that {@code (key==null ? k==null :
-     * key.equals(k))}, then this method returns {@code v}; otherwise
-     * it returns {@code null}.  (There can be at most one such mapping.)
-     *
-     * <p>A return value of {@code null} does not <i>necessarily</i>
-     * indicate that the map contains no mapping for the key; it's also
-     * possible that the map explicitly maps the key to {@code null}.
-     * The {@link #containsKey containsKey} operation may be used to
-     * distinguish these two cases.
-     *
-     * @see #put(Object, Object)
-     */
     public V get(Object key) {
         Node<K, V> e;
         return (e = getNode(hash(key), key)) == null ? null : e.value;
     }
 
-    /**
-     * Implements Map.get and related methods.
-     *
-     * @param hash hash for key
-     * @param key  the key
-     * @return the node, or null if none
-     */
     final Node<K, V> getNode(int hash, Object key) {
         Node<K, V>[] tab;
         Node<K, V> first, e;
@@ -328,11 +224,13 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
             Node<K, V> e;
             K k;
             if (p.hash == hash && ((k = p.key) == key || (key != null && key.equals(k)))) e = p;
+                // 如果当前的bucket里面已经是红黑树的话，执行红黑树的添加操作
             else if (p instanceof TreeNode) e = ((TreeNode<K, V>) p).putTreeVal(this, tab, hash, key, value);
             else {
                 for (int binCount = 0; ; ++binCount) {
                     if ((e = p.next) == null) {
                         p.next = newNode(hash, key, value, null);
+                        // TREEIFY_THRESHOLD = 8，判断如果当前bucket的位置链表长度大于8的话就将此链表变成红黑树
                         if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
                             treeifyBin(tab, hash);
                         break;
@@ -375,8 +273,8 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
             newThr = (int) (DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);// 0.75 * 16
         }
         if (newThr == 0) {//oldCap==0&&oldThr>0
-            float ft = (float) newCap * loadFactor;//将newCap乘上一个扩容因子,因为有可能结果为浮点型，所以用float类型的局部变量ft接收
-            // 再将ft转成int类型赋值给newThr阈值，前提是newCap还未达到最大容量，否则就直接将最大容量赋给newThr
+            float ft = (float) newCap * loadFactor;//将newCap乘上一个扩容因子,因为有可能结果为浮点型,所以用float类型的局部变量ft接收
+            // 再将ft转成int类型赋值给newThr阈值,前提是newCap还未达到最大容量,否则就直接将最大容量赋给newThr
             newThr = (newCap < MAXIMUM_CAPACITY && ft < (float) MAXIMUM_CAPACITY ? (int) ft : Integer.MAX_VALUE);
         }
         threshold = newThr;
@@ -430,8 +328,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /**
-     * Replaces all linked nodes in bin at index for given hash unless
-     * table is too small, in which case resizes instead.
+     * 链表变成红黑树
      */
     final void treeifyBin(Node<K, V>[] tab, int hash) {
         int n, index;
@@ -440,54 +337,31 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         else if ((e = tab[index = (n - 1) & hash]) != null) {
             TreeNode<K, V> hd = null, tl = null;
             do {
+                // 链表节点包装成树节点
                 TreeNode<K, V> p = replacementTreeNode(e, null);
                 if (tl == null) hd = p;
                 else {
+                    // 将所有TreeNode连接在一起此时只是链表结构
                     p.prev = tl;
                     tl.next = p;
                 }
                 tl = p;
             } while ((e = e.next) != null);
-            if ((tab[index] = hd) != null) hd.treeify(tab);
+            if ((tab[index] = hd) != null)
+                // 对TreeNode链表进行树化
+                hd.treeify(tab);
         }
     }
 
-    /**
-     * Copies all of the mappings from the specified map to this map.
-     * These mappings will replace any mappings that this map had for
-     * any of the keys currently in the specified map.
-     *
-     * @param m mappings to be stored in this map
-     * @throws NullPointerException if the specified map is null
-     */
     public void putAll(Map<? extends K, ? extends V> m) {
         putMapEntries(m, true);
     }
 
-    /**
-     * Removes the mapping for the specified key from this map if present.
-     *
-     * @param key key whose mapping is to be removed from the map
-     * @return the previous value associated with <tt>key</tt>, or
-     * <tt>null</tt> if there was no mapping for <tt>key</tt>.
-     * (A <tt>null</tt> return can also indicate that the map
-     * previously associated <tt>null</tt> with <tt>key</tt>.)
-     */
     public V remove(Object key) {
         Node<K, V> e;
         return (e = removeNode(hash(key), key, null, false, true)) == null ? null : e.value;
     }
 
-    /**
-     * Implements Map.remove and related methods.
-     *
-     * @param hash       hash for key
-     * @param key        the key
-     * @param value      the value to match if matchValue, else ignored
-     * @param matchValue if true only remove if value is equal
-     * @param movable    if false do not move other nodes while removing
-     * @return the node, or null if none
-     */
     final Node<K, V> removeNode(int hash, Object key, Object value, boolean matchValue, boolean movable) {
         Node<K, V>[] tab;
         Node<K, V> p;
@@ -522,10 +396,6 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         return null;
     }
 
-    /**
-     * Removes all of the mappings from this map.
-     * The map will be empty after this call returns.
-     */
     public void clear() {
         Node<K, V>[] tab;
         modCount++;
@@ -987,7 +857,6 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
      *
      * @return a shallow copy of this map
      */
-    @SuppressWarnings("unchecked")
     @Override
     public Object clone() {
         HashMap<K, V> result;
@@ -1067,13 +936,13 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
             // Check Map.Entry[].class since it's the nearest public type to
             // what we're actually creating.
             SharedSecrets.getJavaOISAccess().checkArray(s, Map.Entry[].class, cap);
-            @SuppressWarnings({"rawtypes", "unchecked"}) Node<K, V>[] tab = (Node<K, V>[]) new Node[cap];
+            Node<K, V>[] tab = (Node<K, V>[]) new Node[cap];
             table = tab;
 
             // Read the keys and values, and put the mappings in the HashMap
             for (int i = 0; i < mappings; i++) {
-                @SuppressWarnings("unchecked") K key = (K) s.readObject();
-                @SuppressWarnings("unchecked") V value = (V) s.readObject();
+                K key = (K) s.readObject();
+                V value = (V) s.readObject();
                 putVal(hash(key), key, value, false, false);
             }
         }
@@ -1172,7 +1041,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     static class HashMapSpliterator<K, V> {
         final HashMap<K, V> map;
         Node<K, V> current;          // current node
-        int index;                  // 当前索引，提前/拆分时修改
+        int index;                  // 当前索引,提前/拆分时修改
         int fence;                  // one past last index
         int est;                    // size estimate
         int expectedModCount;       // for comodification checks
@@ -1443,18 +1312,21 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /* ------------------------------------------------------------ */
-    // Tree bins
+    // 树节点
 
     /**
-     * Entry for Tree bins. Extends LinkedHashMap.Entry (which in turn
-     * extends Node) so can be used as extension of either regular or
-     * linked node.
+     * 红黑树:
+     * 每个节点是黑色或者红色
+     * 根节点是黑色
+     * 每个叶子节点是黑色
+     * 从任意一个节点到叶子节点,所经过的黑色节点数目必须相等
+     * 空节点被认为是黑色的
      */
     static final class TreeNode<K, V> extends LinkedHashMap.Entry<K, V> {
-        TreeNode<K, V> parent;  // red-black tree links
+        TreeNode<K, V> parent;  // 红黑树链接
         TreeNode<K, V> left;
         TreeNode<K, V> right;
-        TreeNode<K, V> prev;    // needed to unlink next upon deletion
+        TreeNode<K, V> prev;    // 删除后需要取消下一个链接
         boolean red;
 
         TreeNode(int hash, K key, V val, Node<K, V> next) {
@@ -1462,7 +1334,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         }
 
         /**
-         * Returns root of tree containing this node.
+         * 返回包含此节点的树的根
          */
         final TreeNode<K, V> root() {
             for (TreeNode<K, V> r = this, p; ; ) {
@@ -1472,35 +1344,48 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         }
 
         /**
-         * Ensures that the given root is the first node of its bin.
+         * 将红黑树的root节点移动到tab相对应的索引位置(即头节点)
          */
         static <K, V> void moveRootToFront(Node<K, V>[] tab, TreeNode<K, V> root) {
+            //tab表的长度
             int n;
             if (root != null && tab != null && (n = tab.length) > 0) {
+                // 计算索引
                 int index = (n - 1) & root.hash;
+                // 原链表的头节点
                 TreeNode<K, V> first = (TreeNode<K, V>) tab[index];
+                // 如果头节点和红黑树的root节点不相等,就需要找到root节点在链表中位置,并在链表中进行数据交换
                 if (root != first) {
+                    // 后继节点
                     Node<K, V> rn;
                     tab[index] = root;
+                    // root的前驱节点
                     TreeNode<K, V> rp = root.prev;
+                    // 如果root的后继节点存在,则将它的前驱节点指向root的前驱节点
                     if ((rn = root.next) != null) ((TreeNode<K, V>) rn).prev = rp;
+                    // 如果root的前驱节点存在,则将它的后继节点指向root的后继节点
                     if (rp != null) rp.next = rn;
+                    // 链表中的头节点存在,则将他的前驱节点指向root
                     if (first != null) first.prev = root;
+                    // root的后继节点指向头节点
                     root.next = first;
+                    // root的前驱节点指向null
                     root.prev = null;
                 }
+                //断言(assert)语句 程序不准备通过捕获异常来处理的错误
+                // 递归不变检查（验证红黑树的正确性）
                 assert checkInvariants(root);
             }
         }
 
         /**
-         * Finds the node starting at root p with the given hash and key.
-         * The kc argument caches comparableClassFor(key) upon first use
-         * comparing keys.
+         * 查找从 根节点 开始并具有给定 hash 和 key 的节点
+         * kc参数在首次使用比较时keys 缓存 comparableClassFor（key）
          */
         final TreeNode<K, V> find(int h, Object k, Class<?> kc) {
             TreeNode<K, V> p = this;
             do {
+                //ph:当前节点的 hash 值,dir: 方向
                 int ph, dir;
                 K pk;
                 TreeNode<K, V> pl = p.left, pr = p.right, q;
@@ -1543,42 +1428,57 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
          */
         final void treeify(Node<K, V>[] tab) {
             TreeNode<K, V> root = null;
+            // 以for循环的方式遍历刚才我们创建的链表 此节点赋给x
             for (TreeNode<K, V> x = this, next; x != null; x = next) {
+                // next向前推进
                 next = (TreeNode<K, V>) x.next;
                 x.left = x.right = null;
+                //为根节点赋值
                 if (root == null) {
                     x.parent = null;
-                    x.red = false;
+                    x.red = false;//根节点是黑色
                     root = x;
                 } else {
                     K k = x.key;
                     int h = x.hash;
                     Class<?> kc = null;
+                    // 此时红黑树已经有了根节点,上面获取了当前加入红黑树的项的key和hash值进入核心循环
+                    // 这里从root开始,是以一个自顶向下的方式遍历添加
+                    // for循环没有控制条件,由代码内break跳出循环
                     for (TreeNode<K, V> p = root; ; ) {
+                        // dir:方向,-1为左子树,+1为右子树
+                        // ph: 父节点的hash
                         int dir, ph;
                         K pk = p.key;
                         if ((ph = p.hash) > h) dir = -1;
                         else if (ph < h) dir = 1;
                         else if ((kc == null && (kc = comparableClassFor(k)) == null) || (dir = compareComparables(kc, k, pk)) == 0)
                             dir = tieBreakOrder(k, pk);
-
+                        // xp:x parent
                         TreeNode<K, V> xp = p;
+                        // 找到符合x添加条件的节点
                         if ((p = (dir <= 0) ? p.left : p.right) == null) {
                             x.parent = xp;
+                            // 如果xp的hash值大于x的hash值,将x添加在xp的左边
                             if (dir <= 0) xp.left = x;
+                                // 反之添加在xp的右边
                             else xp.right = x;
+                            // 维护添加后红黑树的红黑结构
                             root = balanceInsertion(root, x);
+                            // 跳出循环当前链表中的项成功的添加到了红黑树中
                             break;
                         }
                     }
                 }
             }
+            //将红黑树的root节点移动到tab相对应的索引位置(即头节点)
             moveRootToFront(tab, root);
         }
 
         /**
          * Returns a list of non-TreeNodes replacing those linked from
          * this node.
+         * 返回替换此节点链接的非树节点的列表
          */
         final Node<K, V> untreeify(HashMap<K, V> map) {
             Node<K, V> hd = null, tl = null;
@@ -1708,12 +1608,12 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         }
 
         /**
-         * 把数的节点分成 较低的数和较高的数 或者如果现在太小，则非树化
+         * 把数的节点分成 较低的数和较高的数 或者如果现在太小,则非树化
          * bit 旧容量
          */
         final void split(HashMap<K, V> map, Node<K, V>[] tab, int index, int bit) {
             TreeNode<K, V> b = this;
-            // 重新链接到lo和hi列表，保持顺序
+            // 重新链接到lo和hi列表,保持顺序
             TreeNode<K, V> loHead = null, loTail = null;
             TreeNode<K, V> hiHead = null, hiTail = null;
             int lc = 0, hc = 0;
@@ -1721,18 +1621,19 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
                 next = (TreeNode<K, V>) e.next;
                 e.next = null;
                 if ((e.hash & bit) == 0) {
+                    //重排后仍会处于原索引位 的节点,这些节点之间不一定相邻
                     if ((e.prev = loTail) == null) loHead = e;
                     else loTail.next = e;
                     loTail = e;
                     ++lc;
                 } else {
+                    //重排后将处于新的索引位的节点
                     if ((e.prev = hiTail) == null) hiHead = e;
                     else hiTail.next = e;
                     hiTail = e;
                     ++hc;
                 }
             }
-
             if (loHead != null) {
                 if (lc <= UNTREEIFY_THRESHOLD) tab[index] = loHead.untreeify(map);
                 else {
@@ -1751,21 +1652,46 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         }
 
         /* ------------------------------------------------------------ */
-        // Red-black tree methods, all adapted from CLR
+        //红黑树方法
 
+        /**
+         * 左旋
+         */
         static <K, V> TreeNode<K, V> rotateLeft(TreeNode<K, V> root, TreeNode<K, V> p) {
+            // p:当前节点 r:右子节点 pp:父节点的父节点 rl:右节点的左节点
+            //           pp
+            //              p
+            //                 r
+            //              rl
             TreeNode<K, V> r, pp, rl;
+            //当前节点和右子节点均存在
             if (p != null && (r = p.right) != null) {
-                if ((rl = p.right = r.left) != null) rl.parent = p;
-                if ((pp = r.parent = p.parent) == null) (root = r).red = false;
-                else if (pp.left == p) pp.left = r;
-                else pp.right = r;
+                //rl是p的右子节点,r的左节点
+                if ((rl = p.right = r.left) != null)
+                    //p是rl的父节点
+                    rl.parent = p;
+                //pp是r的父节点、p的父节点
+                if ((pp = r.parent = p.parent) == null)
+                    // r设置为黑
+                    (root = r).red = false;
+                    //如果pp的左节点为p
+                else if (pp.left == p)
+                    //pp的左节点设置为r
+                    pp.left = r;
+                    //pp的右节点是p
+                else
+                    //pp的右节点设置为r
+                    pp.right = r;
+                //p是r的左节点,r是p的右节点
                 r.left = p;
                 p.parent = r;
             }
             return root;
         }
 
+        /**
+         * 右旋
+         */
         static <K, V> TreeNode<K, V> rotateRight(TreeNode<K, V> root, TreeNode<K, V> p) {
             TreeNode<K, V> l, pp, lr;
             if (p != null && (l = p.left) != null) {
@@ -1779,24 +1705,55 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
             return root;
         }
 
+        /**
+         * 平衡插入
+         */
         static <K, V> TreeNode<K, V> balanceInsertion(TreeNode<K, V> root, TreeNode<K, V> x) {
+            // 新加入树节点默认都是红色的,不会破坏树的结构
             x.red = true;
+            // xp:x parent,代表x的父节点
+            // xpp:x parent parent,代表x的祖父节点
+            // xppl:x parent parent left,代表x的祖父的左节点
+            // xppr:x parent parent right,代表x的祖父的右节点
             for (TreeNode<K, V> xp, xpp, xppl, xppr; ; ) {
+                // 如果x的父节点为null说明只有一个节点,该节点为根节点,根节点为黑色,red = false
                 if ((xp = x.parent) == null) {
                     x.red = false;
                     return x;
-                } else if (!xp.red || (xpp = xp.parent) == null) return root;
+                }
+                // 进入else说明不是根节点
+                // 如果父节点是黑色,红色的x节点可以直接添加到黑色节点后面，返回根就行了
+                // 如果父节点是红色的,但祖父节点为空的话也可以直接返回根此时父节点就是根节点,因为根必须是黑色的,添加在后面没有任何问题
+                else if (!xp.red || (xpp = xp.parent) == null) return root;
+
+                // 一旦我们进入到这里就说明了两件事情
+                // 1.x的父节点xp是红色的,这样就遇到两个红色节点相连的问题,所以必须经过旋转变换
+                // 2.x的祖父节点xpp不为空
+                // 判断如果父节点是否是祖父节点的左节点
                 if (xp == (xppl = xpp.left)) {
+                    // 父节点xp是祖父的左节点xppr
+                    // 判断祖父节点的右节点不为空并且是否是红色的
+                    // 此时xpp的左右节点都是红的,所以直接进行上面所说的第三种变换,将两个子节点变成黑色,将xpp变成红色,然后将红色节点x顺利的添加到了xp的后面
+                    // 这里大家有疑问为什么将x = xpp
+                    // 这是由于将xpp变成红色以后可能与xpp的父节点发生两个相连红色节点的冲突,这就又构成了第二种旋转变换,所以必须从底向上的进行变换,直到根
+                    // 所以令x = xpp,然后进行下下一层循环,接着往上走
                     if ((xppr = xpp.right) != null && xppr.red) {
                         xppr.red = false;
                         xp.red = false;
                         xpp.red = true;
                         x = xpp;
                     } else {
+                        // 进入到这个else里面说明
+                        // 父节点xp是祖父的左节点xppr
+                        // 祖父节点xpp的右节点xppr是黑色节点或者为空,默认规定空节点也是黑色的
+                        // 下面要判断x是xp的左节点还是右节点
                         if (x == xp.right) {
+                            // x是xp的右节点，此时的结构是：xpp左->xp右->x。这明显是第二中变换需要进行两次旋转，这里先进行一次旋转
+                            // 下面是第一次旋转
                             root = rotateLeft(root, x = xp);
                             xpp = (xp = x.parent) == null ? null : xp.parent;
                         }
+                        // 针对本身就是xpp左->xp左->x的结构或者由于上面的旋转造成的这种结构进行一次旋转
                         if (xp != null) {
                             xp.red = false;
                             if (xpp != null) {
@@ -1805,7 +1762,9 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
                             }
                         }
                     }
-                } else {
+                }
+                // 这里的分析方式和前面的相对称只不过全部在右测不再重复分析
+                else {
                     if (xppl != null && xppl.red) {
                         xppl.red = false;
                         xp.red = false;
@@ -1828,6 +1787,9 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
             }
         }
 
+        /**
+         * 平衡删除
+         */
         static <K, V> TreeNode<K, V> balanceDeletion(TreeNode<K, V> root, TreeNode<K, V> x) {
             for (TreeNode<K, V> xp, xpl, xpr; ; ) {
                 if (x == null || x == root) return root;
@@ -1904,18 +1866,29 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         }
 
         /**
-         * Recursive invariant check
+         * 验证红黑树的准确性
          */
         static <K, V> boolean checkInvariants(TreeNode<K, V> t) {
+            // tp-父节点,tl-左子节点,tr-右子节点,tb-前驱节点,tn-后继节点
             TreeNode<K, V> tp = t.parent, tl = t.left, tr = t.right, tb = t.prev, tn = (TreeNode<K, V>) t.next;
+            // 当出现以下任一情况时,红黑树或者双向链表不正确
+            // 1、如果前驱节点存在,但是前驱节点的后继节点不是当前节点
             if (tb != null && tb.next != t) return false;
+            // 2.如果后继节点存在,但是后继节点的前驱节点不是当前节点
             if (tn != null && tn.prev != t) return false;
+            // 3、父节点存在,但是父节点的左子节点、右子节点均不是当前节点
             if (tp != null && t != tp.left && t != tp.right) return false;
+            // 4、左子节点存在。但是左子节点的父节点不是当前节点或者左子节点的hash值大于当前节点的hash值
             if (tl != null && (tl.parent != t || tl.hash > t.hash)) return false;
+            // 5、右子节点存在。但是右子节点的父节点不是当前节点或者右子节点的hash值小于当前节点的hash值
             if (tr != null && (tr.parent != t || tr.hash < t.hash)) return false;
+            // 6、当前节点是红色,孩子节点也是红色
             if (t.red && tl != null && tl.red && tr != null && tr.red) return false;
+            // 递归验证左子树
             if (tl != null && !checkInvariants(tl)) return false;
+            // 递归验证右子树
             if (tr != null && !checkInvariants(tr)) return false;
+            // 都正确返回true
             return true;
         }
     }
