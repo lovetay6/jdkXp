@@ -366,7 +366,8 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
             if (oldCap >= MAXIMUM_CAPACITY) {//最大容量不扩容返回
                 threshold = Integer.MAX_VALUE;
                 return oldTab;
-            } else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY && oldCap >= DEFAULT_INITIAL_CAPACITY) //扩容后新容量小于最大容量而且旧容量大于初始容量(16)
+            } else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY && oldCap >= DEFAULT_INITIAL_CAPACITY)
+                //扩容后新容量小于最大容量而且旧容量大于初始容量(16)
                 newThr = oldThr << 1; //加倍 扩容阈值(容量 *负载因子)
         } else if (oldThr > 0) newCap = oldThr;//有参构造 新容量已设置为旧阈值
         else {//无参构造
@@ -1708,6 +1709,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
 
         /**
          * 把数的节点分成 较低的数和较高的数 或者如果现在太小，则非树化
+         * bit 旧容量
          */
         final void split(HashMap<K, V> map, Node<K, V>[] tab, int index, int bit) {
             TreeNode<K, V> b = this;
