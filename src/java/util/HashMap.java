@@ -77,7 +77,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /**
-     * 判断实现  Comparable 接口则返回x的Class,否则为空
+     * 判断实现Comparable接口则返回x的Class,否则为空
      */
     static Class<?> comparableClassFor(Object x) {
         if (x instanceof Comparable) {
@@ -98,7 +98,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /**
-     * 如果x与kc（k的筛选可比性）匹配,则返回k.compareTo（x）,否则为0
+     * 如果x与kc（同一个class）匹配,则返回k.compareTo（x）,否则为0
      */
     static int compareComparables(Class<?> kc, Object k, Object x) {
         return (x == null || x.getClass() != kc ? 0 : ((Comparable) k).compareTo(x));
@@ -115,21 +115,14 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
     }
 
     /* ---------------- 字段 -------------- */
-
     transient Node<K, V>[] table;
-
     transient Set<Map.Entry<K, V>> entrySet;
-
     transient int size;
-
     transient int modCount;
-
     int threshold;
-
     final float loadFactor;
 
     /* ---------------- 公用操作 -------------- */
-
     public HashMap(int initialCapacity, float loadFactor) {
         if (initialCapacity < 0) throw new IllegalArgumentException("Illegal initial capacity: " + initialCapacity);
         if (initialCapacity > MAXIMUM_CAPACITY) initialCapacity = MAXIMUM_CAPACITY;
@@ -152,13 +145,6 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         putMapEntries(m, false);
     }
 
-    /**
-     * Implements Map.putAll and Map constructor.
-     *
-     * @param m     the map
-     * @param evict false when initially constructing this map, else
-     *              true (relayed to method afterNodeInsertion).
-     */
     final void putMapEntries(Map<? extends K, ? extends V> m, boolean evict) {
         int s = m.size();
         if (s > 0) {
@@ -1334,7 +1320,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         }
 
         /**
-         * 返回包含此节点的树的根
+         * 返回包含此节点的树的根节点
          */
         final TreeNode<K, V> root() {
             for (TreeNode<K, V> r = this, p; ; ) {
@@ -1476,8 +1462,6 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         }
 
         /**
-         * Returns a list of non-TreeNodes replacing those linked from
-         * this node.
          * 返回替换此节点链接的非树节点的列表
          */
         final Node<K, V> untreeify(HashMap<K, V> map) {
@@ -1491,9 +1475,6 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
             return hd;
         }
 
-        /**
-         * Tree version of putVal.
-         */
         final TreeNode<K, V> putTreeVal(HashMap<K, V> map, Node<K, V>[] tab, int h, K k, V v) {
             Class<?> kc = null;
             boolean searched = false;
