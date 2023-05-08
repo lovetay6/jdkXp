@@ -200,23 +200,31 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         return putVal(hash(key), key, value, false, true);
     }
 
+    /**
+     * @param onlyIfAbsent 如果当前位置已存在一个值，是否替换，false是替换，true是不替换
+     * @param evict        表是否在创建模式，如果为false，则表是在创建模式
+     */
     final V putVal(int hash, K key, V value, boolean onlyIfAbsent, boolean evict) {
         Node<K, V>[] tab;
         Node<K, V> p;
         int n, i;
+        //1、检查table是否为空，如果为空就初始化
         if ((tab = table) == null || (n = tab.length) == 0) n = (tab = resize()).length;
+        //2.检查table中位置为(n -1 ) & hash 是否为空，如果为空，直接放入（这是放在数组里）
         if ((p = tab[i = (n - 1) & hash]) == null) tab[i] = newNode(hash, key, value, null);
         else {
             Node<K, V> e;
             K k;
+            //3.如果桶中存在的元素的key和hash都相等，直接覆盖旧value
             if (p.hash == hash && ((k = p.key) == key || (key != null && key.equals(k)))) e = p;
-                // 如果当前的bucket里面已经是红黑树的话，执行红黑树的添加操作
+                //4.判断存放该元素的链表是否转为红黑树，如果为红黑树，直接插入
             else if (p instanceof TreeNode) e = ((TreeNode<K, V>) p).putTreeVal(this, tab, hash, key, value);
+                //5.第3和第4都不成立，将插入元素存放在链表中
             else {
                 for (int binCount = 0; ; ++binCount) {
                     if ((e = p.next) == null) {
                         p.next = newNode(hash, key, value, null);
-                        // TREEIFY_THRESHOLD = 8，判断如果当前bucket的位置链表长度大于8的话就将此链表变成红黑树
+                        // 节点数超过8并且数组长度超过64就要转换为红黑树
                         if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
                             treeifyBin(tab, hash);
                         break;
@@ -225,6 +233,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
                     p = e;
                 }
             }
+            //6.存在key值和hash值相等的，直接覆盖旧value
             if (e != null) { // existing mapping for key
                 V oldValue = e.value;
                 if (!onlyIfAbsent || oldValue == null) e.value = value;
@@ -232,6 +241,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
                 return oldValue;
             }
         }
+        //7.将记录修改次数加1，判断是否需要扩容，如果需要就扩容
         ++modCount;
         if (++size > threshold) resize();
         afterNodeInsertion(evict);
@@ -320,6 +330,7 @@ public class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Clone
         int n, index;
         Node<K, V> e;
         if (tab == null || (n = tab.length) < MIN_TREEIFY_CAPACITY) resize();
+            //节点数超过8并且数组长度超过64转换为红黑树
         else if ((e = tab[index = (n - 1) & hash]) != null) {
             TreeNode<K, V> hd = null, tl = null;
             do {
